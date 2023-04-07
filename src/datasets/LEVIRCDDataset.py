@@ -30,21 +30,21 @@ class LEVIRCDDataset(data.Dataset):
         running_mode_name = self.running_mode.name
 
         img_x1 = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/A/{}_{}.png".format(running_mode_name, running_mode_name, index + 1))))
+            os.getcwd(), "data/{}/A/{}_{}.png".format(running_mode_name, running_mode_name, index + 1)))).resize([512, 512])
         img_x2 = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/B/{}_{}.png".format(running_mode_name, running_mode_name, index + 1))))
+            os.getcwd(), "data/{}/B/{}_{}.png".format(running_mode_name, running_mode_name, index + 1)))).resize([512, 512])
         img_y = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/label/{}_{}.png".format(running_mode_name, running_mode_name, index + 1))))
+            os.getcwd(), "data/{}/label/{}_{}.png".format(running_mode_name, running_mode_name, index + 1)))).resize([512, 512])
 
         if self.data_fetching_mode is DataFetchingMode.raw:
             return self.to_tenser_transformer(img_x1), self.to_tenser_transformer(img_x2), self.to_tenser_transformer(img_y)
         else:
-            return torch.cat([self.to_tenser_transformer(img_x1), self.to_tenser_transformer(img_x2)], dim=1)
+            return torch.cat([self.to_tenser_transformer(img_x1), self.to_tenser_transformer(img_x2)], dim=0), self.to_tenser_transformer(img_y)
 
     def __len__(self):
         if self.running_mode is RunningMode.test:
             return 128
-        if self.running_mode is RunningMode.train:
+        elif self.running_mode is RunningMode.train:
             return 445
-        if self.running_mode is RunningMode.valuation:
+        else:
             return 64
