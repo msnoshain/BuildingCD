@@ -21,7 +21,6 @@ class Conv2dTwice(nn.Module):
             nn.ReLU(inplace=True))
 
     def forward(self, x):
-
         x = self.conv(x)
         return x
 

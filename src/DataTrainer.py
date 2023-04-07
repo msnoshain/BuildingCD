@@ -29,7 +29,7 @@ class DataTrainer():
 
         self.module.to(device=self.device)
 
-        dataloaders = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
+        dataloader = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
                                       shuffle=True, num_workers=2 if self.is_using_cuda() else 0,
                                       pin_memory=self.is_using_cuda())
  
@@ -37,7 +37,7 @@ class DataTrainer():
             print('Epoch {}/{} begins at {}'.format(e + 1, self.epochs, time.strftime("%H:%M:%S",time.localtime())))
             epoch_loss = 0
 
-            for x, y in dataloaders:
+            for x, y in dataloader:
                 inputs = x.to(self.device)
                 labels = y.to(self.device)
 
