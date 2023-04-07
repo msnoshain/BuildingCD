@@ -30,12 +30,9 @@ class LEVIRCDDataset(data.Dataset):
     def __getitem__(self, index):
         running_mode_value = self.running_mode._value_
 
-        img_x1 = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/A/{}_{}.png".format(running_mode_value, running_mode_value, index + 1)))).resize([512, 512])
-        img_x2 = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/B/{}_{}.png".format(running_mode_value, running_mode_value, index + 1)))).resize([512, 512])
-        img_y = Image.open(os.path.abspath(os.path.join(
-            os.getcwd(), "data/{}/label/{}_{}.png".format(running_mode_value, running_mode_value, index + 1)))).resize([512, 512])
+        img_x1 = Image.open(os.path.abspath("data/{}/A/{}_{}.png".format(running_mode_value, running_mode_value, index + 1))).resize([512, 512])
+        img_x2 = Image.open(os.path.abspath("data/{}/B/{}_{}.png".format(running_mode_value, running_mode_value, index + 1))).resize([512, 512])
+        img_y = Image.open(os.path.abspath("data/{}/label/{}_{}.png".format(running_mode_value, running_mode_value, index + 1))).resize([512, 512])
 
 
         if self.data_fetching_mode is DataFetchingMode.raw:
