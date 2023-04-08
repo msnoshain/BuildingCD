@@ -20,7 +20,7 @@ class ModuleTrainer():
         loss_function:  loss funtion
         epoch:          epoch
         device:         device that will be used to train the model
-        save_frequency: determine the calculation graph will be saved every how many epochs
+        save_frequency: determine the computational graph will be saved every how many epochs
     """
 
     save_frequency: int = 0
@@ -94,7 +94,7 @@ class ModuleTrainer():
             print("loss:%0.3f" % (epoch_loss))
             print('-' * 10)
 
-            # determine whether saving the calculation graph
+            # determine whether saving the computational graph
             if self.save_frequency > 0 and (e+1) % self.save_frequency is 0:
                 if self.pt_path is None:
                     raise ValueError(self.pt_path)
