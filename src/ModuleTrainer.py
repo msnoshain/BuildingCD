@@ -23,23 +23,15 @@ class ModuleTrainer():
         save_frequency: determine the calculation graph will be saved every how many epochs
     """
 
-    dataset: data.Dataset
-    module: nn.Module
-
-    batch_size: int = 1
-    optimizer: optim.Optimizer
-    loss_function: nn.Module = nn.BCELoss()
-    epoch: int = 200
-    device: torch.device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu")
-
     save_frequency: int = 0
     pt_path: str = None
 
     def __init__(self,
                  dataset: data.Dataset = None,
                  module: nn.Module = None,
-                 batch_size: int = 2,
+                 # 如果使用GPU训练，请根据显存大小选择合适的batch_size。
+                 # 对于unet与LEVIR-CD数据集，实测：显存占用（GB）= batch_size * 4GB
+                 batch_size: int = 1,
                  loss_function: nn.Module = nn.BCELoss(),
                  epoch: int = 200,
                  device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
@@ -74,7 +66,7 @@ class ModuleTrainer():
         self.module.to(device=self.device)
 
         dataloader = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
-                                     shuffle=True, num_workers=2,
+                                     shuffle=True, num_workers=0,
                                      pin_memory=self.is_using_cuda())
 
         # train
@@ -108,7 +100,7 @@ class ModuleTrainer():
                     raise ValueError(self.pt_path)
 
                 torch.save(self.module, self.pt_path +
-                           "\{}_{}.pt".format(self.module_name, e+1))
+                           "\\{}_epoch_{}.pt".format(self.module_name, e+1))
 
     def is_using_cuda(self):
         if self.device.type is "cuda":

@@ -13,10 +13,10 @@ def train_unet(pt_path: str = None):
         ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
-        in_ch=6, out_ch=1), save_frequency=20, pt_path=pt_path)
+        in_ch=6, out_ch=1), save_frequency=20, pt_path=pt_path, epoch=400, batch_size=2)
     trainer.train()
 
-    torch.save(trainer.module, pt_path+"\UNet_Finished.pt")
+    torch.save(trainer.module, pt_path+"\\UNet_Finished.pt")
 
 
 def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
