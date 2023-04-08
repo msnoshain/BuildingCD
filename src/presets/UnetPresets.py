@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import DataTrainer as DT
+import ModuleTrainer as MT
 import PIL.Image as Image
 import torch.utils.data as data
 
@@ -12,9 +12,11 @@ def train_unet(pt_path: str = None):
     if pt_path is None:
         ValueError(pt_path)
 
-    trainer = DT.DataTrainer(LEVIRCDDataset(), UNet(in_ch=6, out_ch=1))
+    trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
+        in_ch=6, out_ch=1), save_frequency=20, pt_path=pt_path)
     trainer.train()
-    torch.save(trainer.module, pt_path)
+
+    torch.save(trainer.module, pt_path+"\UNet_Finished.pt")
 
 
 def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
@@ -43,7 +45,7 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
 
     step = 0
     sum_count = dataloader.__len__()
-    
+
     for input, label in dataloader:
         input = input.to(device)
 
@@ -56,10 +58,10 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
             for j in range(pixel_count):
                 input_positive = input_mtx[i][j] > 0.5
                 label_positive = label_mtx[i][j] > 0.5
-                
-                # if input and label have the same class
-                if not(input_positive ^ label_positive):
-                    
+
+                # if input and label are the same class
+                if not (input_positive ^ label_positive):
+
                     # if positive
                     if input_positive:
                         tp += 1
