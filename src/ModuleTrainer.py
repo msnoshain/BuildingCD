@@ -29,8 +29,8 @@ class ModuleTrainer():
     def __init__(self,
                  dataset: data.Dataset = None,
                  module: nn.Module = None,
-                 # 如果使用GPU训练，请根据显存大小选择合适的batch_size。
-                 # 对于unet与LEVIR-CD数据集，实测：显存占用（GB）= batch_size * 4GB
+                 # Choose proper batch_size if you are using GPU.
+                 # For unet with LEVIR-CD，GPU_RAM should >= batch_size * 4GB
                  batch_size: int = 1,
                  loss_function: nn.Module = nn.BCELoss(),
                  epoch: int = 200,
@@ -66,7 +66,7 @@ class ModuleTrainer():
         self.module.to(device=self.device)
 
         dataloader = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
-                                     shuffle=True, num_workers=0,
+                                     shuffle=True, num_workers=3,
                                      pin_memory=self.is_using_cuda())
 
         # train
@@ -100,7 +100,7 @@ class ModuleTrainer():
                     raise ValueError(self.pt_path)
 
                 torch.save(self.module, self.pt_path +
-                           "\\{}_epoch_{}.pt".format(self.module_name, e+1))
+                           "\\{}_ep{}_loss%0.3f.pt".format(self.module_name, e+1) % (epoch_loss))
 
     def is_using_cuda(self):
         if self.device.type is "cuda":

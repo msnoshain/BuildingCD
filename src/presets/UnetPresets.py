@@ -13,7 +13,7 @@ def train_unet(pt_path: str = None):
         ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
-        in_ch=6, out_ch=1), save_frequency=20, pt_path=pt_path, epoch=400, batch_size=2)
+        in_ch=6, out_ch=1), save_frequency=1, pt_path=pt_path, epoch=400, batch_size=2)
     trainer.train()
 
     torch.save(trainer.module, pt_path+"\\UNet_Finished.pt")
@@ -31,16 +31,10 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
     dataloader = data.DataLoader(dataset=LEVIRCDDataset(
         running_mode=RunningMode.evaluation), shuffle=False)
 
-    # √+
+
     tp = 0
-
-    # √-
     tn = 0
-
-    # -2+
     fp = 0
-
-    # +2-
     fn = 0
 
     step = 0
@@ -49,14 +43,14 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
     for input, label in dataloader:
         input = input.to(device)
 
-        input_mtx = torch.squeeze(model(input)).cpu().detach().numpy()
+        output_mtx = torch.squeeze(model(input)).cpu().detach().numpy()
         label_mtx = torch.squeeze(label).detach().numpy()
 
-        pixel_count = input_mtx.shape[0]
+        pixel_count = output_mtx.shape[0]
 
         for i in range(pixel_count):
             for j in range(pixel_count):
-                input_positive = input_mtx[i][j] > 0.5
+                input_positive = output_mtx[i][j] > 0.5
                 label_positive = label_mtx[i][j] > 0.5
 
                 # if input and label are the same class
@@ -80,7 +74,7 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
             if img_path is None:
                 ValueError(img_path)
 
-            img = Image.fromarray(input_mtx.astype(np.uint8))
+            img = Image.fromarray((output_mtx*255).astype(np.uint8))
             img.save(img_path+"\{}.bmp".format(step))
 
         print("{} of {} imgs has been calculated.".format(step, sum_count))
