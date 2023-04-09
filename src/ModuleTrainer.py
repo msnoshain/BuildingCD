@@ -65,9 +65,10 @@ class ModuleTrainer():
         # move data to target device
         self.module.to(device=self.device)
 
+        # num_workers根据CPU的线程数确定，对于多核CPU适当提高num_workers会降低CPU占用
+        # batch_size适当提高可以增快收敛速度，但会占据更高的显存
         dataloader = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
-                                     shuffle=True, num_workers=3,
-                                     pin_memory=self.is_using_cuda())
+                                     shuffle=True, num_workers=5, pin_memory=False)
 
         # train
         for e in range(self.epoch):
@@ -101,9 +102,3 @@ class ModuleTrainer():
 
                 torch.save(self.module, self.pt_path +
                            "\\{}_ep{}_loss%0.3f.pt".format(self.module_name, e+1) % (epoch_loss))
-
-    def is_using_cuda(self):
-        if self.device.type is "cuda":
-            return True
-
-        return False
