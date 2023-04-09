@@ -13,7 +13,7 @@ def train_siamnet(pt_path: str = None):
         ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=SiamNet(), 
-                               save_frequency=20, pt_path=pt_path, epoch=400, batch_size=1)
+                               save_frequency=10, pt_path=pt_path, epoch=600, batch_size=6)
     trainer.train()
 
     torch.save(trainer.module, pt_path+"\\UNet_Finished.pt")
