@@ -17,28 +17,17 @@ class RunningMode(Enum):
     evaluation = "val"
 
 
-class DataFetchingMode(Enum):
-    """
-    数据获取模式：原始（两时相遥感影像+标签）或拼接（两时相遥感影像在通道上叠加+标签）
-    """
-
-    raw = 0
-    cat = 1
-
-
 class LEVIRCDDataset(data.Dataset):
     """
     LEVIR-CD数据集
     """
 
     running_mode: RunningMode
-    data_fetching_mode: DataFetchingMode
 
     to_tenser_transformer = transforms.ToTensor()
 
-    def __init__(self, running_mode: RunningMode = RunningMode.train, data_fetching_mode: DataFetchingMode = DataFetchingMode.cat):
+    def __init__(self, running_mode: RunningMode = RunningMode.train):
         self.running_mode = running_mode
-        self.data_fetching_mode = data_fetching_mode
 
     def __getitem__(self, index):
         running_mode_value = self.running_mode._value_
@@ -54,10 +43,7 @@ class LEVIRCDDataset(data.Dataset):
         img_x2 = self.to_tenser_transformer(img_x2)
         img_y = self.to_tenser_transformer(img_y)
 
-        if self.data_fetching_mode is DataFetchingMode.raw:
-            return img_x1, img_x2, img_y
-        else:
-            return torch.cat([img_x1, img_x2], dim=0), img_y
+        return torch.cat([img_x1, img_x2], dim=0), img_y
 
     def __len__(self):
         if self.running_mode is RunningMode.test:
