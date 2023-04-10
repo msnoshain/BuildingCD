@@ -4,13 +4,13 @@ import ModuleTrainer as MT
 import PIL.Image as Image
 import torch.utils.data as data
 
-from models.unet import UNet
+from models.UNet import UNet
 from datasets.LEVIRCDDataset import LEVIRCDDataset, RunningMode
 
 
 def train_unet(pt_path: str = None):
     if pt_path is None:
-        ValueError(pt_path)
+        raise ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
         in_ch=6, out_ch=1), save_frequency=1, pt_path=pt_path, epoch=400, batch_size=2)
@@ -21,7 +21,7 @@ def train_unet(pt_path: str = None):
 
 def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
     if pt_path is None:
-        ValueError(pt_path)
+        raise ValueError(pt_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -72,7 +72,7 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
 
         if save_predict_img:
             if img_path is None:
-                ValueError(img_path)
+                raise ValueError(img_path)
 
             img = Image.fromarray((output_mtx*255).astype(np.uint8))
             img.save(img_path+"\{}.bmp".format(step))

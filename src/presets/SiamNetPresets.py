@@ -10,10 +10,10 @@ from datasets.LEVIRCDDataset import LEVIRCDDataset, RunningMode
 
 def train_siamnet(pt_path: str = None):
     if pt_path is None:
-        ValueError(pt_path)
+        raise ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=SiamNet(), 
                                save_frequency=10, pt_path=pt_path, epoch=600, batch_size=6)
     trainer.train()
 
-    torch.save(trainer.module, pt_path+"\\UNet_Finished.pt")
+    torch.save(trainer.module, pt_path+"\\SiamNet_Finished.pt")

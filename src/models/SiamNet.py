@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.unet import UNet
+from models.UNet import UNet
 
 
 class SiamNet(nn.Module):
