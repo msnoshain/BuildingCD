@@ -26,6 +26,8 @@ class ModuleTrainer():
     save_frequency: int = 0
     pt_path: str = None
 
+    current_loss: float
+
     def __init__(self,
                  dataset: data.Dataset = None,
                  module: nn.Module = None,
@@ -57,6 +59,9 @@ class ModuleTrainer():
         self.save_frequency = save_frequency
         self.pt_path = pt_path
 
+    def report_loss(loss: float, epoch: int):
+        pass
+
     def train(self):
         # params checking
         if self.dataset is None or self.module is None:
@@ -82,11 +87,10 @@ class ModuleTrainer():
                 inputs = x.to(self.device)
                 labels = y.to(self.device)
 
-                self.optimizer.zero_grad()
-
                 outputs = self.module(inputs)
                 loss = self.loss_function(outputs, labels)
 
+                self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += float(loss)
@@ -94,6 +98,8 @@ class ModuleTrainer():
             # report loss
             print("loss:%0.3f" % (epoch_loss))
             print('-' * 10)
+            
+            self.report_loss(epoch_loss, e + 1)
 
             # determine whether saving the computational graph
             if self.save_frequency > 0 and (e+1) % self.save_frequency is 0:

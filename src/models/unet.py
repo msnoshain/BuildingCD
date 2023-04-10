@@ -2,13 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class Conv2dTwice(nn.Module):
-    """
-    Convolution, BatchNormalization and ReLU Block 
-    """
-
+class DoubleConv(nn.Module):
     def __init__(self, in_ch, out_ch):
-        super(Conv2dTwice, self).__init__()
+        super(DoubleConv, self).__init__()
 
         self.conv = nn.Sequential(
             nn.Conv2d(in_ch, out_ch, kernel_size=3,
@@ -21,28 +17,31 @@ class Conv2dTwice(nn.Module):
             nn.ReLU(inplace=True))
 
     def forward(self, x):
-        x = self.conv(x)
-        return x
+        return self.conv(x)
+
+
+class Down(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(Down, self).__init__()
+        self.conv = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            DoubleConv(in_ch, out_ch)
+        )
+
+    def forward(self, x):
+        return self.conv(x)
 
 
 class UpConv(nn.Module):
-    """
-    Up Convolution Block
-    """
-
     def __init__(self, in_ch, out_ch):
         super(UpConv, self).__init__()
         self.up = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(in_ch, out_ch, kernel_size=3,
-                      stride=1, padding=1, bias=True),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True)
+            DoubleConv(in_ch, out_ch)
         )
 
     def forward(self, x):
-        x = self.up(x)
-        return x
+        return self.up(x)
 
 
 class UNet(nn.Module):
@@ -62,23 +61,23 @@ class UNet(nn.Module):
         self.Maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.Maxpool4 = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        self.Conv1 = Conv2dTwice(in_ch, ch_count[0])
-        self.Conv2 = Conv2dTwice(ch_count[0], ch_count[1])
-        self.Conv3 = Conv2dTwice(ch_count[1], ch_count[2])
-        self.Conv4 = Conv2dTwice(ch_count[2], ch_count[3])
-        self.Conv5 = Conv2dTwice(ch_count[3], ch_count[4])
+        self.Conv1 = DoubleConv(in_ch, ch_count[0])
+        self.Conv2 = DoubleConv(ch_count[0], ch_count[1])
+        self.Conv3 = DoubleConv(ch_count[1], ch_count[2])
+        self.Conv4 = DoubleConv(ch_count[2], ch_count[3])
+        self.Conv5 = DoubleConv(ch_count[3], ch_count[4])
 
         self.Up5 = UpConv(ch_count[4], ch_count[3])
-        self.Up_conv5 = Conv2dTwice(ch_count[4], ch_count[3])
+        self.Up_conv5 = DoubleConv(ch_count[4], ch_count[3])
 
         self.Up4 = UpConv(ch_count[3], ch_count[2])
-        self.Up_conv4 = Conv2dTwice(ch_count[3], ch_count[2])
+        self.Up_conv4 = DoubleConv(ch_count[3], ch_count[2])
 
         self.Up3 = UpConv(ch_count[2], ch_count[1])
-        self.Up_conv3 = Conv2dTwice(ch_count[2], ch_count[1])
+        self.Up_conv3 = DoubleConv(ch_count[2], ch_count[1])
 
         self.Up2 = UpConv(ch_count[1], ch_count[0])
-        self.Up_conv2 = Conv2dTwice(ch_count[1], ch_count[0])
+        self.Up_conv2 = DoubleConv(ch_count[1], ch_count[0])
 
         self.Conv = nn.Conv2d(ch_count[0], out_ch,
                               kernel_size=1, stride=1, padding=0)
@@ -123,49 +122,3 @@ class UNet(nn.Module):
         d1 = self.active(out)
 
         return d1
-
-
-class UNetEncoder(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(UNetEncoder, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, 64, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(256, 512, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(512, out_channels, kernel_size=3, padding=1)
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        x = self.relu(self.conv1(x))
-        x = self.pool(x)
-        x = self.relu(self.conv2(x))
-        x = self.pool(x)
-        x = self.relu(self.conv3(x))
-        x = self.pool(x)
-        x = self.relu(self.conv4(x))
-        x = self.pool(x)
-        x = self.relu(self.conv5(x))
-        return x
-
-
-class UNetDecoder(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(UNetDecoder, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, 512, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(512, 256, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(256, 128, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(128, 64, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(64, out_channels, kernel_size=3, padding=1)
-        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        self.relu = nn.ReLU()
-
-    def forward(self, x, skip):
-        x = self.upsample(x)
-        x = torch.cat([x, skip], dim=1)
-        x = self.relu(self.conv1(x))
-        x = self.relu(self.conv2(x))
-        x = self.relu(self.conv3(x))
-        x = self.relu(self.conv4(x))
-        x = self.relu(self.conv5(x))
-        return x

@@ -3,18 +3,8 @@ import torch
 import PIL.Image as Image
 import torch.utils.data as data
 
-from enum import Enum
 from torchvision.transforms import transforms
-
-
-class RunningMode(Enum):
-    """
-    程序运行模式：训练、测试或评估
-    """
-
-    train = "train"
-    test = "test"
-    evaluation = "val"
+from datasets.common import DataFetchingMode, RunningMode
 
 
 class LEVIRCDDataset(data.Dataset):
@@ -22,16 +12,15 @@ class LEVIRCDDataset(data.Dataset):
     LEVIR-CD数据集
     """
 
-    running_mode: RunningMode
-
     to_tenser_transformer = transforms.ToTensor()
 
     split_num: int = 4
 
     def chunk_num(self): return self.split_num * self.split_num
 
-    def __init__(self, running_mode: RunningMode = RunningMode.train):
+    def __init__(self, running_mode: RunningMode = RunningMode.train, data_fetching_mode: DataFetchingMode = DataFetchingMode.concat):
         self.running_mode = running_mode
+        self.data_fetching_mode = data_fetching_mode
 
     def __getitem__(self, index):
         running_mode_value = self.running_mode._value_
@@ -55,7 +44,10 @@ class LEVIRCDDataset(data.Dataset):
         img_x2 = self.to_tenser_transformer(img_x2)
         img_y = self.to_tenser_transformer(img_y)
 
-        return torch.cat([img_x1, img_x2], dim=0), img_y
+        if self.data_fetching_mode is DataFetchingMode.concat:
+            return torch.cat([img_x1, img_x2], dim=0), img_y
+        else:
+            return img_x1, img_x2, img_y
 
     def __len__(self):
         if self.running_mode is RunningMode.test:
