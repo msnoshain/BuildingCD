@@ -1,11 +1,9 @@
-from email.header import Header
 import torch
-import smtplib
-from email.mime.text import MIMEText
-import ModuleTrainer as MT
+from tools.reporters.QQEmailReporter import send_myself_QQEmail
+import tools.ModuleTrainer as MT
 from models.SiameseUNet import SiameseUNet
 from datasets.LEVIRCDDataset import LEVIRCDDataset
-from reporters.QQEmailReporter import send_myself_QQEmail
+
 
 
 def send_loss_to_email(loss: float, epoch: int):
