@@ -4,7 +4,7 @@ import PIL.Image as Image
 import torch.utils.data as data
 
 from torchvision.transforms import transforms
-from datasets.common import DataFetchingMode, RunningMode
+from datasets.Common import DataFetchingMode, RunningMode
 
 
 class LEVIRCDDataset(data.Dataset):
@@ -14,13 +14,14 @@ class LEVIRCDDataset(data.Dataset):
 
     to_tenser_transformer = transforms.ToTensor()
 
-    split_num: int = 4
-
     def chunk_num(self): return self.split_num * self.split_num
 
-    def __init__(self, running_mode: RunningMode = RunningMode.train, data_fetching_mode: DataFetchingMode = DataFetchingMode.concat):
+    def __init__(self, running_mode: RunningMode = RunningMode.train, 
+                 data_fetching_mode: DataFetchingMode = DataFetchingMode.concat,
+                 split_num: int = 4):
         self.running_mode = running_mode
         self.data_fetching_mode = data_fetching_mode
+        self.split_num = split_num
 
     def __getitem__(self, index):
         running_mode_value = self.running_mode._value_

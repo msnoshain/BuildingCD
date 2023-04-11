@@ -1,12 +1,13 @@
 import torch
 import numpy as np
-import tools.ModuleTrainer as MT
 import PIL.Image as Image
 import torch.utils.data as data
+import tools.ModuleTrainer as MT
+import tools.DataEvaluation as DE
+import tools.reporters.QQEmailReporter as QQ
 
 from models.UNet import UNet
 from datasets.LEVIRCDDataset import LEVIRCDDataset, RunningMode
-from tools.reporters.QQEmailReporter import send_myself_QQEmail
 
 
 def train_UNet(pt_path: str = None):
@@ -16,7 +17,7 @@ def train_UNet(pt_path: str = None):
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
         in_ch=6, out_ch=1), save_frequency=10, pt_path=pt_path, epoch=400, batch_size=2)
 
-    trainer.report_loss = lambda loss, epoch: send_myself_QQEmail(
+    trainer.report_loss = lambda loss, epoch: QQ.send_myself_QQEmail(
         "UNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
 
     trainer.train()
@@ -37,7 +38,7 @@ def train_semi_finished_UNet(pt_path: str = None, out_path: str = None):
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=module,
                                save_frequency=10, pt_path=out_path, epoch=400, batch_size=6)
 
-    trainer.report_loss = lambda loss, epoch: send_myself_QQEmail(
+    trainer.report_loss = lambda loss, epoch: QQ.send_myself_QQEmail(
         "UNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
 
     trainer.train()
@@ -45,7 +46,7 @@ def train_semi_finished_UNet(pt_path: str = None, out_path: str = None):
     torch.save(trainer.module, out_path+"\\UNet_Finished.pt")
 
 
-def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
+def evaluate_UNet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
     if pt_path is None:
         raise ValueError(pt_path)
 
@@ -104,12 +105,7 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
 
         print("{} of {} imgs has been calculated.".format(step, sum_count))
 
-    DSC = 2*tp/(fp+2*tp+fn)
-    mIOU = ((tp/(tp+fp+fn))+(tn/(tn+fn+fp)))/2
-    recall = tp/(tp+fn)
-    precision = tp/(tp+fp)
-    f1 = 2*precision*recall/(precision+recall)
-    OA = (tp+tn)/(tp+tn+fp+fn)
+    DSC, mIOU, recall, precision, f1, OA = DE.evaluate_indicators(tp, fp, tn, fn)
 
     print("tp = {}, tn = {}, fp = {}, fn = {}".format(tp, tn, fp, fn))
     print("DSC = {}, mIOU = {}, recall = {}, precision = {}, f1 = {}, OA = {}".format(
