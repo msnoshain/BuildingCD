@@ -26,6 +26,6 @@ def send_myself_QQEmail(title: str, content: str):
         smtpObj.login(sender, password)
         smtpObj.sendmail(sender, receiver, message.as_string())
         print('Successfully send email to 1178890320@qq.com')
-    except smtplib.SMTPException as e:
+    except OSError as e:
         print('Failed send email to 1178890320@qq.com')
         print(e)

@@ -1,8 +1,9 @@
+import os
 import time
 import torch
-import torch.utils.data as data
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as data
 
 
 class ModuleTrainer():
@@ -67,13 +68,13 @@ class ModuleTrainer():
         if self.dataset is None or self.module is None:
             raise ValueError(self.dataset, self.module)
 
-        # move data to target device
+        # move module to target device
         self.module.to(device=self.device)
 
-        # num_workers根据CPU的核心数确定，对于多核CPU适当提高num_workers会降低CPU占用
+        # num_workers一般设为CPU的核心数，会降低CPU占用
         # batch_size适当提高可以增快收敛速度，但会占据更高的显存
         dataloader = data.DataLoader(dataset=self.dataset, batch_size=self.batch_size,
-                                     shuffle=True, num_workers=6, pin_memory=False)
+                                     shuffle=True, num_workers=os.cpu_count(), pin_memory=False)
 
         # train
         for e in range(self.epoch):

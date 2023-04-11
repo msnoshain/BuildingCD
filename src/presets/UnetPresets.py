@@ -6,17 +6,43 @@ import torch.utils.data as data
 
 from models.UNet import UNet
 from datasets.LEVIRCDDataset import LEVIRCDDataset, RunningMode
+from tools.reporters.QQEmailReporter import send_myself_QQEmail
 
 
-def train_unet(pt_path: str = None):
+def train_UNet(pt_path: str = None):
     if pt_path is None:
         raise ValueError(pt_path)
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=UNet(
-        in_ch=6, out_ch=1), save_frequency=1, pt_path=pt_path, epoch=400, batch_size=2)
+        in_ch=6, out_ch=1), save_frequency=10, pt_path=pt_path, epoch=400, batch_size=2)
+
+    trainer.report_loss = lambda loss, epoch: send_myself_QQEmail(
+        "UNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
+
     trainer.train()
 
     torch.save(trainer.module, pt_path+"\\UNet_Finished.pt")
+
+
+def train_semi_finished_UNet(pt_path: str = None, out_path: str = None):
+    if pt_path is None:
+        raise ValueError(pt_path)
+
+    if out_path is None:
+        raise ValueError(out_path)
+
+    module = torch.load(pt_path, map_location=torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"))
+
+    trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=module,
+                               save_frequency=10, pt_path=out_path, epoch=400, batch_size=6)
+
+    trainer.report_loss = lambda loss, epoch: send_myself_QQEmail(
+        "UNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
+
+    trainer.train()
+
+    torch.save(trainer.module, out_path+"\\UNet_Finished.pt")
 
 
 def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
@@ -30,7 +56,6 @@ def evaluate_unet(pt_path: str = None, save_predict_img: bool = False, img_path:
 
     dataloader = data.DataLoader(dataset=LEVIRCDDataset(
         running_mode=RunningMode.evaluation), shuffle=False)
-
 
     tp = 0
     tn = 0

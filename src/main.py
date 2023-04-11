@@ -5,4 +5,5 @@ import presets.SiameseUNetPresets as SP
 if __name__ == '__main__':
     # UP.train_unet(os.path.abspath("computational_graphs/UNet"))
     # UP.evaluate_unet(os.path.abspath("computational_graphs/UNet/UNet_ep300_loss1.965.pt"), True, os.path.abspath("result"))
-    SP.train_SiameseUNet(os.path.abspath("computational_graphs/SiameseUNet"))
+    # SP.train_SiameseUNet(os.path.abspath("computational_graphs/SiameseUNet"))
+    SP.train_semi_finished_SiameseUNet(os.path.abspath("computational_graphs/SiameseUNet/SiameseUNet_ep140_loss2.668.pt"), os.path.abspath("computational_graphs/SiameseUNet"))
