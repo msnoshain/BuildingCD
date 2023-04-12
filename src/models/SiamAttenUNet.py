@@ -3,13 +3,13 @@ import torch.nn as nn
 import models.Common as Common
 
 
-class SiameseUNet(nn.Module):
+class SiamAttenUNet(nn.Module):
     def __init__(self, in_ch: int=3, out_ch: int=1):
-        super(SiameseUNet, self).__init__()
+        super(SiamAttenUNet, self).__init__()
         self.encoder1 = Common.UNetEncoder(in_ch)
         self.encoder2 = Common.UNetEncoder(in_ch)
         self.conv = Common.DoubleConv(1024, 2048)
-        self.decoder = Common.UNetDecoder(2048, out_ch)
+        self.decoder = Common.UNetDecoderWithAttentionGate(2048, out_ch)
         self.active = nn.Sigmoid()
 
     def forward(self, x):
