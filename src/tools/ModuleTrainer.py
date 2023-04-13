@@ -85,11 +85,11 @@ class ModuleTrainer():
             # calculate
             epoch_loss = 0
             for x, y in dataloader:
-                inputs = x.to(self.device)
-                labels = y.to(self.device)
-
-                outputs = self.module(inputs)
-                loss = self.loss_function(outputs, labels)
+                input = x.to(self.device)
+                label = y.to(self.device)
+                
+                predict = self.module(input)
+                loss = self.loss_function(predict, label)
 
                 self.optimizer.zero_grad()
                 loss.backward()
