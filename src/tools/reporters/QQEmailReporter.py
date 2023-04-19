@@ -1,30 +1,28 @@
+import ssl
 from email.header import Header
 from email.mime.text import MIMEText
+from email.message import EmailMessage
 import smtplib
 
 
 def send_myself_QQEmail(title: str, content: str):
-    # 发件人邮箱
-    sender = '1178890320@qq.com'
-    # 收件人邮箱
-    receiver = '1178890320@qq.com'
+    EMAIL_ADDRESS = '1178890320@qq.com'
+    EMAIL_PASSWORD = 'sfsrautfqvqobacg'
 
-    # 发送邮件的服务器
-    smtp_server = 'smtp.qq.com'
-    # 发件人邮箱的密码或授权码
-    password = 'wnskzqmvldzcjebg'
+    context = ssl.create_default_context()
+    sender = EMAIL_ADDRESS
+    receiver = EMAIL_ADDRESS
 
-    # 创建邮件对象
-    message = MIMEText(content, 'plain', 'utf-8')
-    message['From'] = Header(sender, 'utf-8')
-    message['To'] = Header(receiver, 'utf-8')
-    message['Subject'] = Header(title, 'utf-8')
+    msg = EmailMessage()
+    msg['subject'] = title
+    msg['From'] = sender
+    msg['To'] = receiver
+    msg.set_content(content)
 
-    # 发送邮件
     try:
-        smtpObj = smtplib.SMTP_SSL(smtp_server, 465)
-        smtpObj.login(sender, password)
-        smtpObj.sendmail(sender, receiver, message.as_string())
+        with smtplib.SMTP_SSL("smtp.qq.com", 465, context=context) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.send_message(msg)
         print('Successfully send email to 1178890320@qq.com')
     except OSError as e:
         print('Failed send email to 1178890320@qq.com')

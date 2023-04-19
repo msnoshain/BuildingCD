@@ -7,26 +7,26 @@ import tools.DataEvaluation as DE
 import tools.reporters.QQEmailReporter as QQ
 
 from datasets.Common import RunningMode
-from models.SiameseUNet import SiameseUNet
+from models.SiamAttenUNet import SiamAttenUNet
 from datasets.LEVIRCDDataset import LEVIRCDDataset
 
 
-def train_SiameseUNet(out_path: str = None):
+def train_SiamCBAMUNet(out_path: str = None):
     if out_path is None:
         raise ValueError(out_path)
 
-    trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=SiameseUNet(),
-                               save_frequency=10, pt_path=out_path, epoch=600, batch_size=6)
+    trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=SiamAttenUNet(),
+                               save_frequency=10, pt_path=out_path, epoch=600, batch_size=4)
 
     trainer.report_loss = lambda loss, epoch: QQ.send_myself_QQEmail(
-        "SiameseUNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
+        "SiamCBAMUNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
 
     trainer.train()
 
-    torch.save(trainer.module, out_path+"\\SiameseUNet_Finished.pt")
+    torch.save(trainer.module, out_path+"\\SiamCBAMUNet_Finished.pt")
 
 
-def train_semi_finished_SiameseUNet(pt_path: str = None, out_path: str = None):
+def train_semi_finished_SiamCBAMUNet(pt_path: str = None, out_path: str = None, curr_epoch: int = 0):
     if pt_path is None:
         raise ValueError(pt_path)
 
@@ -37,17 +37,17 @@ def train_semi_finished_SiameseUNet(pt_path: str = None, out_path: str = None):
         "cuda" if torch.cuda.is_available() else "cpu"))
 
     trainer = MT.ModuleTrainer(dataset=LEVIRCDDataset(), module=module,
-                               save_frequency=10, pt_path=out_path, epoch=600, batch_size=6)
+                               save_frequency=10, pt_path=out_path, epoch=600, batch_size=4)
 
     trainer.report_loss = lambda loss, epoch: QQ.send_myself_QQEmail(
-        "SiameseUNet Loss Report", "epoch: {}, loss: {}".format(epoch, loss))
+        "SiamCBAMUNet Loss Report", "epoch: {}, loss: {}".format(epoch+curr_epoch, loss))
 
     trainer.train()
 
-    torch.save(trainer.module, out_path+"\\SiameseUNet_Finished.pt")
+    torch.save(trainer.module, out_path+"\\SiamCBAMUNet_Finished.pt")
 
 
-def evaluate_SiameseUNet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
+def evaluate_SiamCBAMUNet(pt_path: str = None, save_predict_img: bool = False, img_path: str = None):
     if pt_path is None:
         raise ValueError(pt_path)
 
@@ -100,23 +100,26 @@ def evaluate_SiameseUNet(pt_path: str = None, save_predict_img: bool = False, im
 
         step += 1
 
+        if step % (split_num**2) is 0:
+            print("{} of {} imgs has been calculated.".format(step/(split_num**2), sum_count/(split_num**2)))
+            
         if save_predict_img:
             if img_path is None:
                 raise ValueError(img_path)
 
             img_block_cache.append(output_mtx)
-
+            
             if step % (split_num**2) is 0:
+
                 x1 = np.hstack([img_block_cache[0], img_block_cache[1]])
                 x2 = np.hstack([img_block_cache[2], img_block_cache[3]])
                 x = np.vstack([x1, x2])
 
                 img = Image.fromarray((x*255).astype(np.uint8))
-                img.save(img_path+"\{}.bmp".format(step))
+                img.save(img_path+"\{}.bmp".format(step/4))
 
                 img_block_cache = []
 
-        print("{} of {} imgs has been calculated.".format(step, sum_count))
 
     DSC, mIOU, recall, precision, f1, OA = DE.evaluate_indicators(tp, fp, tn, fn)
 
