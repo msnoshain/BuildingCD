@@ -3,9 +3,9 @@ import torch.nn as nn
 import models.Common as Common
 
 
-class SiamAttenUNet(nn.Module):
+class SiamCBAMUNet(nn.Module):
     def __init__(self, in_ch: int=3, out_ch: int=1):
-        super(SiamAttenUNet, self).__init__()
+        super(SiamCBAMUNet, self).__init__()
         self.encoder1 = Common.UNetEncoder(in_ch)
         self.encoder2 = Common.UNetEncoder(in_ch)
         self.conv = Common.DoubleConv(1024, 2048)
